@@ -16,8 +16,8 @@
 	* Author: Teaclon(锤子)
 	* Open source license: GNU General Public License v3.0
 	* Open source storage location: Github and Coding
-	* Web from Github: 
-	* Web from Coding: 
+	* Web from Github: https://github.com/Tommy131/TESuperCDK/
+	* Web from Coding: https://coding.net/u/Teaclon/p/TESuperCDK/git
 	* Contacct: ["QQ", 3385815158]
 	* Donate Author: https://pl.zxda.net/plugins/877.html
 	* Last-Update: 2017-10-17, 10:00
@@ -37,8 +37,8 @@
 	* 作者: Teaclon(锤子)
 	* 代码开源许可证: GNU General Public License v3.0
 	* 代码开源存放地点: Github and Coding
-	* Github项目地址: 
-	* Coding项目地址: 
+	* Github项目地址: https://github.com/Tommy131/TESuperCDK/
+	* Coding项目地址: https://coding.net/u/Teaclon/p/TESuperCDK/git
 	* 捐赠作者: https://pl.zxda.net/plugins/877.html
 	* 与作者获取联系: ["QQ", 3385815158]
 	* 最后更新时间: 2017-10-17, 22:00
@@ -311,7 +311,7 @@ class CDK_Main extends PluginBase implements Listener
 			return true;
 		}
 		
-		if($this->config->getAll()[$cdk]["is-use"] != false)
+		if($this->config->getAll()[$cdk]["is-use"] == false)
 		{
 			$this->config->setNested($cdk.".is-use", true);
 			$this->config->setNested($cdk.".user", $sender->getName());
