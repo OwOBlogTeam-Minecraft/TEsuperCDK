@@ -55,25 +55,26 @@
 
 namespace TESuperCDK;
 
-use pocketmine\utils\TextFormat;             #调用TextFormat,颜色;
-use pocketmine\command\CommandSender;        #发送指令;
-use pocketmine\plugin\PluginBase;            #插件基础;
-use pocketmine\command\Command;              #指令;
-use pocketmine\event\Listener;               #监听;
-use pocketmine\utils\Config;                 #配置文件;
-use pocketmine\Server;                       #服务器;
-use pocketmine\Player;                       #玩家;
+use pocketmine\command\CommandSender;
+use pocketmine\plugin\PluginBase;
+use pocketmine\command\Command;
+use pocketmine\event\Listener;
+use pocketmine\utils\Config;
+use pocketmine\Server;
+use pocketmine\Player;
+use pocketmine\command\ConsoleCommandSender;
 
 // class 类名 ;
 class CDK_Main extends PluginBase implements Listener
 {
 	const PREFIX = "[TESuperCDK] ";
 	private $config;
+	
 	public function onLoad() //插件初始化时, 必须要初始本插件的东西(本函数按照需要存在).
 	{
 		// 这里写你需要写的代码;
 		$this->getLogger()->info("初始化本插件......");
-		if(is_dir($this->getDataFolder())) // 判断是否存在本插件的专属文件夹;
+		if(!is_dir($this->getDataFolder())) // 判断是否存在本插件的专属文件夹;
 		{
 			mkdir($this->getDataFolder());
 		}
@@ -104,7 +105,9 @@ class CDK_Main extends PluginBase implements Listener
 		{
 			if(!$sender->isOp())
 			{
-				$sender->sendMessage("§c".self::PREFIX."你没有权限使用该命令.");
+				$sender->sendMessage(self::PREFIX."---HELPER---");
+				$sender->sendMessage("/tscdkhelp 召唤帮助助手");
+				$sender->sendMessage("/tscdk 使用(use) <卡密>");
 				return true;
 			}
 			
@@ -112,7 +115,7 @@ class CDK_Main extends PluginBase implements Listener
 			$sender->sendMessage("/tscdkhelp 召唤帮助助手");
 			$sender->sendMessage("/tscdk 生成(add) <卡密>");
 			$sender->sendMessage("/tscdk 删除(del) <卡密>");
-			$sender->sendMessage("/tscdk 类型(type) <卡密> <类型>");
+			$sender->sendMessage("/tscdk 使用(use) <卡密>");
 			$sender->sendMessage("/tscdk 修改(modify) <卡密> <内容>");
 			$sender->sendMessage("/tscdk 指定(specify) <卡密> <指定的使用者名称>");
 			$sender->sendMessage("具体操作请访问https://pl.zxda.net/plugins/877.html");
@@ -129,6 +132,12 @@ class CDK_Main extends PluginBase implements Listener
 			
 			if($args[0] === "生成" || $args[0] === "add")
 			{
+				if(!$sender->isOp())
+				{
+					$sender->sendMessage("§c".self::PREFIX."你没有权限使用该命令.");
+					return true;
+				}
+				
 				if(!isset($args[1])) //如果没有输入指令
 				{
 					$sender->sendMessage("§c".self::PREFIX."未检测到自定义卡密输入, 将使用随机卡密生成空卡密.");
@@ -140,7 +149,7 @@ class CDK_Main extends PluginBase implements Listener
 					if(strlen($args[1]) >= 10) // 判断字符总和是否大于等于10;
 					{
 						$sender->sendMessage("§e".self::PREFIX."正在创建空卡密§a".$args[1]."§e.");
-						$this->CreateCDK($sender);
+						$this->CreateCDK($sender, $args[1]);
 					}
 					else
 					{
@@ -151,18 +160,138 @@ class CDK_Main extends PluginBase implements Listener
 			}
 			elseif($args[0] === "删除" || $args[0] === "del")
 			{
-				return true;
-			}
-			elseif($args[0] === "类型" || $args[0] === "type")
-			{
+				if(!$sender->isOp())
+				{
+					$sender->sendMessage("§c".self::PREFIX."你没有权限使用该命令.");
+					return true;
+				}
+				
+				if(!isset($args[1])) //如果没有输入指令
+				{
+					$sender->sendMessage("§c".self::PREFIX."请输入卡密.");
+					$this->CreateCDK($sender);
+					return true;
+				}
+				
+				if(!isset($this->config->getAll()[$args[1]]))
+				{
+					$sender->sendMessage("§c".self::PREFIX."卡密不存在.");
+				}
+				else
+				{
+					$this->config->remove($args[1]);
+					$this->config->save();
+					$sender->sendMessage("§a".self::PREFIX."卡密删除成功.");
+				}
 				return true;
 			}
 			elseif($args[0] === "修改" || $args[0] === "modify")
 			{
+				if(!$sender->isOp())
+				{
+					$sender->sendMessage("§c".self::PREFIX."你没有权限使用该命令.");
+					return true;
+				}
+				
+				if(!isset($args[1])) //如果没有输入指令
+				{
+					$sender->sendMessage("§c".self::PREFIX."请输入卡密.");
+					$this->CreateCDK($sender);
+					return true;
+				}
+				
+				if(!isset($this->config->getAll()[$args[1]]))
+				{
+					$sender->sendMessage("§c".self::PREFIX."卡密不存在.");
+					return true;
+				}
+				
+				if($this->config->getNested($args[1].".command") != null)
+				{
+					$sender->sendMessage("§c".self::PREFIX."卡密已被定义.");
+					return true;
+				}
+				
+				if(!isset($args[2]))
+				{
+					$sender->sendMessage("§c".self::PREFIX."请输入内容.");
+					return true;
+				}
+				
+				$this->config->setNested($args[1].".command", str_replace("@", " ", $args[2]));
+				$this->config->save();
+				$sender->sendMessage("§a".self::PREFIX."卡密类型更改成功.");
 				return true;
 			}
 			elseif($args[0] === "指定" || $args[0] === "specify")
 			{
+				if(!$sender->isOp())
+				{
+					$sender->sendMessage("§c".self::PREFIX."你没有权限使用该命令.");
+					return true;
+				}
+				
+				if(!isset($args[1])) //如果没有输入指令
+				{
+					$sender->sendMessage("§c".self::PREFIX."请输入卡密.");
+					$this->CreateCDK($sender);
+					return true;
+				}
+				
+				if(!isset($this->config->getAll()[$args[1]]))
+				{
+					$sender->sendMessage("§c".self::PREFIX."卡密不存在.");
+					return true;
+				}
+				
+				if(isset($this->config->getAll()[$args[1]]["specified-person"]))
+				{
+					$sender->sendMessage("§c".self::PREFIX."该卡密已存在所有者.");
+					return true;
+				}
+				
+				$this->config->setNested($args[1].".specified-person", $args[2]);
+				$this->config->save();
+				$sender->sendMessage("§a".self::PREFIX."卡密更改成功.");
+				return true;
+			}
+			elseif($args[0] === "使用" || $args[0] === "use")
+			{
+				if(!$sender instanceof Player)
+				{
+					$sender->sendMessage("§c".self::PREFIX."请在游戏内使用这个指令.");
+					return true;
+				}
+				
+				if(!isset($args[1])) //如果没有输入指令
+				{
+					$sender->sendMessage("§c".self::PREFIX."请输入卡密.");
+					$this->CreateCDK($sender);
+					return true;
+				}
+				
+				if(!isset($this->config->getAll()[$args[1]]))
+				{
+					$sender->sendMessage("§c".self::PREFIX."卡密不存在.");
+					return true;
+				}
+				
+				if(isset($this->config->getAll()[$args[1]]["specified-person"]))
+				{
+					if($sender->getName() !== $this->config->getAll()[$args[1]]["specified-person"])
+					{
+						$sender->sendMessage("§c".self::PREFIX."你没有权限使用这个卡密.");
+						return true;
+					}
+					else
+					{
+						$this->UseCDK($sender, $args[1]);
+					}
+				}
+				else
+				{
+					$this->UseCDK($sender, $args[1]);
+				}
 				return true;
 			}
 			else
@@ -174,18 +303,47 @@ class CDK_Main extends PluginBase implements Listener
 	}
 	
 	
-	protected function CreateCDK($sender, $cdk = null)
+	protected function UseCDK($sender, $cdk = null) // 用来使用卡密的函数;
 	{
-		if(strlen($cdk)==null)
+		if($this->config->getAll()[$cdk]["command"] == null)
+		{
+			$sender->sendMessage("§c".self::PREFIX."卡密为空, 请联系管理员设置.");
+			return true;
+		}
+		
+		if($this->config->getAll()[$cdk]["is-use"] != false)
+		{
+			$this->config->setNested($cdk.".is-use", true);
+			$this->config->setNested($cdk.".user", $sender->getName());
+			$this->config->setNested($cdk.".used-date", date("Y-m-d"));
+			$this->config->save();
+			
+			$command = str_replace("{user}", $sender->getName(), $this->config->getAll()[$cdk]["command"]);
+			$this->getServer()->dispatchCommand(new ConsoleCommandSender(), $command);
+			$sender->sendMessage("§a".self::PREFIX."使用成功, 卡密已作废.");
+		}
+		else
+		{
+			$this->config->setNested($cdk.".description", $this->config->getAll()[$cdk]["command"]);
+			$this->config->setNested($cdk.".command", "say ".$sender->getName()."尝试非法使用作废的卡密!");
+			$this->config->save();
+			
+			$sender->sendMessage("§c".self::PREFIX."本次的非法使用已记录在使用日志中.");
+			
+		}
+	}
+	
+	
+	protected function CreateCDK($sender, $cdk = null) // 用来创建卡密的函数;
+	{
+		if(strlen($cdk) == null)
 		{
 			$cdk_01 = mt_rand(100000, 200000);
 			$cdk_02 = mt_rand(300000, 400000);
 			$cdk_03 = mt_rand(500000, 600000);
-			$cdk_04 = mt_rand(700000, 800000);
-			$cdk_05 = mt_rand(900000, 999999);
-			$cdk = $cdk_01.$cdk_02.$cdk_03.$cdk_04.$cdk_05;
+			$cdk = $cdk_01.$cdk_02.$cdk_03;
 		}
-		$this->config->setNested($cdk.".type", null);
+		$this->config->setNested($cdk.".command", null);
 		$this->config->setNested($cdk.".is-use", false);
 		$this->config->setNested($cdk.".creater", $sender->getName());
 		$this->config->setNested($cdk.".create-date", date("Y-m-d"));
@@ -194,8 +352,7 @@ class CDK_Main extends PluginBase implements Listener
 		$this->config->save();
 		
 		$sender->sendMessage("§a".self::PREFIX."空卡密创建完毕, 卡密为: §f".$cdk."§a, 请按照以下步骤配置.");
-		$sender->sendMessage("§e".self::PREFIX."输入指令 /tscdk 类型 ".$cdk." <类型> 配置卡密.");
-		$sender->sendMessage(self::PREFIX."目前有以下3种: cmd, money, gamemode.");
+		$sender->sendMessage("§e".self::PREFIX."输入指令 /tscdk 修改 ".$cdk." <内容> 配置卡密.");
 		unset($cdk);
 	}
 	
