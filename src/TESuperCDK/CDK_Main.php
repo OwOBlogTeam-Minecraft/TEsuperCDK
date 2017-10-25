@@ -73,7 +73,7 @@ class CDK_Main extends PluginBase implements Listener
 	public function onLoad() //插件初始化时, 必须要初始本插件的东西(本函数按照需要存在).
 	{
 		// 这里写你需要写的代码;
-		$this->getLogger()->info("初始化本插件......");
+		$this->getLogger()->info("§e初始化本插件......");
 		if(!is_dir($this->getDataFolder())) // 判断是否存在本插件的专属文件夹;
 		{
 			mkdir($this->getDataFolder());
@@ -84,9 +84,9 @@ class CDK_Main extends PluginBase implements Listener
 	public function onEnable() // 插件正式加载(本函数必须存在);
 	{
 		// 这里写你需要写的代码;
-		$this->getLogger()->info("初始化完毕.");
+		$this->getLogger()->info("§e初始化完毕.");
 		$this->config = new Config($this->getDataFolder()."config.yml", Config::YAML, []); // 生成配置文件;
-		$this->getLogger()->info("插件已加载.");
+		$this->getLogger()->info("§a插件已加载.");
 		// -----END-----
 	}
 	
@@ -94,7 +94,7 @@ class CDK_Main extends PluginBase implements Listener
 	{
 		// 这里写你需要写的代码;
 		$this->config->save();
-		$this->getLogger()->info("插件已卸载.");
+		$this->getLogger()->info("§c插件已卸载.");
 		// -----END-----
 	}
 	
@@ -103,22 +103,21 @@ class CDK_Main extends PluginBase implements Listener
 		// 本插件代码仅对于初学者使用. 为了方便理解, 代码区域将以if-else语句代替switch语句;
 		if($cmd->getName() === "tscdkhelp") // 如果指令为"tscdkhelp";
 		{
-			if(!$sender->isOp())
-			{
-				$sender->sendMessage(self::PREFIX."---HELPER---");
-				$sender->sendMessage("/tscdkhelp 召唤帮助助手");
-				$sender->sendMessage("/tscdk 使用(use) <卡密>");
-				return true;
-			}
 			
-			$sender->sendMessage(self::PREFIX."---HELPER---");
-			$sender->sendMessage("/tscdkhelp 召唤帮助助手");
-			$sender->sendMessage("/tscdk 生成(add) <卡密>");
-			$sender->sendMessage("/tscdk 删除(del) <卡密>");
-			$sender->sendMessage("/tscdk 使用(use) <卡密>");
-			$sender->sendMessage("/tscdk 修改(modify) <卡密> <内容>");
-			$sender->sendMessage("/tscdk 指定(specify) <卡密> <指定的使用者名称>");
-			$sender->sendMessage("具体操作请访问https://pl.zxda.net/plugins/877.html");
+			$sender->sendMessage(self::PREFIX."§e---HELPER--- §f[§dv".$this->getDescription()->getName()."f]");
+			$sender->sendMessage("§d/§6tscdkhelp                           §f召唤帮助助手");
+			$sender->sendMessage("§d/§6tscdk 使用(use) §f<§e卡密§f>        使用CDK");
+			
+			if($sender->isOp())
+			{
+				$sender->sendMessage("§d/§6tscdk 生成(add) §f<§e卡密§f>                        生成CDK, 卡密可选填");
+				$sender->sendMessage("§d/§6tscdk 删除(del) §f<§e卡密§f>                        删除CDK");
+				$sender->sendMessage("§d/§6tscdk 修改(modify) §f<§e卡密§f> §f<§e内容§f>        修改空卡密");
+				$sender->sendMessage("§d/§6tscdk 指定(specify) §f<§e卡密§f> §f<§e指定的使用者名称§f>     给一个卡密设定指定的使用者");
+				$sender->sendMessage("§d/§6tscdk 查询(find) §f<§e卡密§f>                       查找卡密, 卡密可选填");
+				$sender->sendMessage("§d/§6tscdk 重置(reset) §f<§e卡密§f>                      重置卡密");
+				$sender->sendMessage("§e具体操作请访问:§a https://pl.zxda.net/plugins/877.html");
+			}
 			return true;
 		}
 		
@@ -169,7 +168,6 @@ class CDK_Main extends PluginBase implements Listener
 				if(!isset($args[1])) //如果没有输入指令
 				{
 					$sender->sendMessage("§c".self::PREFIX."请输入卡密.");
-					$this->CreateCDK($sender);
 					return true;
 				}
 				
@@ -218,9 +216,26 @@ class CDK_Main extends PluginBase implements Listener
 					return true;
 				}
 				
-				$this->config->setNested($args[1].".command", str_replace("@", " ", $args[2]));
-				$this->config->save();
-				$sender->sendMessage("§a".self::PREFIX."卡密类型更改成功.");
+				
+				if(preg_match_all("/\W({user})\W/", $args[2], $arris))
+				{
+					$this->config->setNested($args[1].".command", str_replace("@", " ", $args[2]));
+					$this->config->save();
+					$sender->sendMessage("§a".self::PREFIX."卡密类型更改成功 §f(§eType: §6{user} §f)§a.");
+				}
+				elseif(preg_match_all("/\W({all})\W/", $args[2], $arris))
+				{
+					$this->config->setNested($args[1].".command", str_replace("@", " ", $args[2]));
+					$this->config->save();
+					$sender->sendMessage("§a".self::PREFIX."卡密类型更改成功 §f(§eType: §6{all} §f)§a.");
+				}
+				else
+				{
+					$sender->sendMessage("§c".self::PREFIX."卡密出错, 原因: 未知的数据类型, 目前仅支持 {user} 和 {all}.");
+					$sender->sendMessage("§c".self::PREFIX."卡密: §f".$args[1]);
+					return false;
+				}
+				
 				return true;
 			}
 			elseif($args[0] === "指定" || $args[0] === "specify")
@@ -294,12 +309,72 @@ class CDK_Main extends PluginBase implements Listener
 				}
 				return true;
 			}
+			elseif($args[0] === "查询" || $args[0] === "find")
+			{
+				if(!isset($args[1]))
+				{
+					foreach($this->config->getAll() as $cdk => $infos)
+					{
+						$use_status = ($infos["is-use"]==false)? "§e未使用": "§c已使用";
+						$user_status = ($infos["user"]==null)? "§e暂无使用者": "§c{$infos["user"]}";
+						$use_date = ($infos["used-date"]==null)? "§e暂无信息": "§c{$infos["used-date"]}";
+						
+						$sender->sendMessage("----------------------------------------");
+						$sender->sendMessage("§b卡密: §6{$cdk}");
+						$sender->sendMessage("§b使用情况: ".$use_status);
+						$sender->sendMessage("§b创建者以及创建日期: §f".$infos["creater"].", ".$infos["create-date"]);
+						$sender->sendMessage("§b使用者: ".$user_status);
+						$sender->sendMessage("§b使用日期: ".$use_date);
+						$sender->sendMessage("----------------------------------------");
+						
+						unset($cdk, $infos, $use_status, $user_status, $use_date);
+					}
+					return true;
+				}
+				else
+				{
+					if(strlen($args[1]) > 0)
+					{
+						if(!isset($this->config->getAll()[$args[1]]))
+						{
+							$sender->sendMessage(self::PREFIX."§c卡密不存在, 请重新输入.");
+							return true;
+						}
+						$cdk = $this->config->getAll()[$args[1]];
+						
+						$use_status = ($cdk["is-use"]==false)? "§e未使用": "§c已使用";
+						$user_status = ($cdk["user"]==null)? "§e暂无使用者": "§c{$cdk["user"]}";
+						$use_date = ($cdk["used-date"]==null)? "§e暂无信息": "§c{$cdk["used-date"]}";
+						
+						$sender->sendMessage("§b查询结果如下:");
+						$sender->sendMessage("----------------------------------------");
+						$sender->sendMessage("§b卡密: §6{$args[1]}");
+						$sender->sendMessage("§b使用情况: ".$use_status);
+						$sender->sendMessage("§b创建者以及创建日期: §f".$cdk["creater"].", ".$cdk["create-date"]);
+						$sender->sendMessage("§b使用者: ".$user_status);
+						$sender->sendMessage("§b使用日期: ".$use_date);
+						$sender->sendMessage("----------------------------------------");
+						
+						unset($cdk, $use_status, $user_status, $use_date);
+					}
+					else
+					{
+						$sender->sendMessage(self::PREFIX."请输入需要查询的卡密.");
+					}
+					return true;
+				}
+			}
+			elseif($args[0] === "重置" || $args[0] === "reset")
+			{
+				$sender->sendMessage("§e".self::PREFIX."完善中.");
+			}
 			else
 			{
 				$sender->sendMessage("§c".self::PREFIX."指令不存在, 请输入 /tscdkhelp 查看帮助.");
 				return true;
 			}
 		}
+		return true;
 	}
 	
 	
@@ -313,12 +388,27 @@ class CDK_Main extends PluginBase implements Listener
 		
 		if($this->config->getAll()[$cdk]["is-use"] == false)
 		{
+			
+			if(preg_match_all("/\W({user})\W/", $cmd = $this->config->getAll()[$cdk]["command"], $arris))
+			{
+				$command = str_replace("{user}", $sender->getName(), $cmd);
+			}
+			elseif(preg_match_all("/\W({all})\W/", $cmd = $this->config->getAll()[$cdk]["command"], $arris))
+			{
+				$command = str_replace("{all}", $sender->getName(), $cmd);
+			}
+			else
+			{
+				$sender->sendMessage("§c".self::PREFIX."卡密出错, 原因: 未知的数据类型, 请截图并且携带你的卡密尝试与管理员取得联系.");
+				$sender->sendMessage("§c".self::PREFIX."卡密: §f".$cdk);
+				return false;
+			}
+			
+			
 			$this->config->setNested($cdk.".is-use", true);
 			$this->config->setNested($cdk.".user", $sender->getName());
 			$this->config->setNested($cdk.".used-date", date("Y-m-d"));
 			$this->config->save();
-			
-			$command = str_replace("{user}", $sender->getName(), $this->config->getAll()[$cdk]["command"]);
 			$this->getServer()->dispatchCommand(new ConsoleCommandSender(), $command);
 			$sender->sendMessage("§a".self::PREFIX."使用成功, 卡密已作废.");
 		}
@@ -341,7 +431,10 @@ class CDK_Main extends PluginBase implements Listener
 			$cdk_01 = mt_rand(100000, 200000);
 			$cdk_02 = mt_rand(300000, 400000);
 			$cdk_03 = mt_rand(500000, 600000);
-			$cdk = $cdk_01.$cdk_02.$cdk_03;
+			// $arr = ["abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"];
+			$cdk_04 = chr(rand(97, 122)); // 随机输出小写字母;
+			$cdk_05 = chr(rand(65, 90)); // 随机输出大写字母;
+			$cdk = $cdk_05.$cdk_01.$cdk_02.$cdk_03.$cdk_04.$cdk_05;
 		}
 		$this->config->setNested($cdk.".command", null);
 		$this->config->setNested($cdk.".is-use", false);
