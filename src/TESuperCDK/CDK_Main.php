@@ -104,18 +104,18 @@ class CDK_Main extends PluginBase implements Listener
 		if($cmd->getName() === "tscdkhelp") // 如果指令为"tscdkhelp";
 		{
 			
-			$sender->sendMessage(self::PREFIX."§e---HELPER--- §f[§dv".$this->getDescription()->getName()."f]");
-			$sender->sendMessage("§d/§6tscdkhelp                           §f召唤帮助助手");
-			$sender->sendMessage("§d/§6tscdk 使用(use) §f<§e卡密§f>        使用CDK");
+			$sender->sendMessage(self::PREFIX."§e---HELPER--- §f[§dv".$this->getDescription()->getVersion()."§f]");
+			$sender->sendMessage("§d/§6tscdkhelp                                             §f召唤帮助助手");
+			$sender->sendMessage("§d/§6tscdk 使用(use) §f<§e卡密§f>                                使用CDK");
 			
 			if($sender->isOp())
 			{
-				$sender->sendMessage("§d/§6tscdk 生成(add) §f<§e卡密§f>                        生成CDK, 卡密可选填");
-				$sender->sendMessage("§d/§6tscdk 删除(del) §f<§e卡密§f>                        删除CDK");
-				$sender->sendMessage("§d/§6tscdk 修改(modify) §f<§e卡密§f> §f<§e内容§f>        修改空卡密");
-				$sender->sendMessage("§d/§6tscdk 指定(specify) §f<§e卡密§f> §f<§e指定的使用者名称§f>     给一个卡密设定指定的使用者");
-				$sender->sendMessage("§d/§6tscdk 查询(find) §f<§e卡密§f>                       查找卡密, 卡密可选填");
-				$sender->sendMessage("§d/§6tscdk 重置(reset) §f<§e卡密§f>                      重置卡密");
+				$sender->sendMessage("§d/§6tscdk 生成(add) §f<§e卡密§f>                                生成CDK, 卡密可选填");
+				$sender->sendMessage("§d/§6tscdk 删除(del) §f<§e卡密§f>                                删除CDK");
+				$sender->sendMessage("§d/§6tscdk 修改(modify) §f<§e卡密§f> §f<§e内容§f>                      修改空卡密");
+				$sender->sendMessage("§d/§6tscdk 指定(specify) §f<§e卡密§f> §f<§e指定的使用者名称§f>         给一个卡密设定指定的使用者");
+				$sender->sendMessage("§d/§6tscdk 查询(find) §f<§e卡密§f>                               查找卡密, 卡密可选填");
+				$sender->sendMessage("§d/§6tscdk 重置(reset) §f<§e卡密§f>                              重置卡密");
 				$sender->sendMessage("§e具体操作请访问:§a https://pl.zxda.net/plugins/877.html");
 			}
 			return true;
