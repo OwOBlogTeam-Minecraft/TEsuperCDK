@@ -14,8 +14,7 @@
 	* Author: Teaclon(锤子)
 	* Open source license: GNU General Public License v3.0
 	* Open source storage location: Github and Coding
-	* Web from Github: 
-	* Web from Coding: 
+	* Web from Github: https://github.com/Tommy131/TESuperCDK/
 	* Contacct: ["QQ", 3385815158]
 	* Donate Author: https://pl.zxda.net/plugins/877.html
 	* Last-Update: 2017-10-17, 22:00
